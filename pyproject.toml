@@ -1,0 +1,54 @@
+[project]
+name = "ml-tabular-pfs"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11.17"
+dependencies = [
+    "lightgbm>=4.7.0",
+    "matplotlib>=3.11.2",
+    "nbformat>=5.11.1",
+    "optuna>=5.0.0",
+    "pandas>=3.1.0",
+    "plotly>=7.1.0",
+    "scikit-learn>=1.9.1",
+    "seaborn>=0.13.2",
+    "statsmodels>=0.15.0",
+]
+
+[dependency-groups]
+dev = [
+    "ipykernel>=7.4.0",
+    "pandas-stubs>=3.1.0.261029",
+    "pyright>=1.1.414",
+    "pytest>=9.1.1",
+    "ruff>=0.17.2",
+]
+
+
+
+[tool.uv]
+package = false
+
+[tool.pyright]
+pythonVersion = "3.11"
+typeCheckingMode = "strict"
+venvPath = "."
+venv = ".venv"
+include = ["."]
+# Data and generated artifacts only; scripts and notebooks are not excluded.
+exclude = [
+    "**/.venv", "**/.git", "**/__pycache__", "**/.pytest_cache",
+    "**/.ruff_cache", "**/.ipynb_checkpoints", "build", "dist", "data", "typings"
+]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+extend-exclude = ["data"]
+# Do not silently skip exploratory code under the gitignored tmp directory.
+respect-gitignore = false
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "B"]
+extend-select = ["UP", "SIM", "RUF100"]
