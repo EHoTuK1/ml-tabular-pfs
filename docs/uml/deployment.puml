@@ -1,21 +1,25 @@
 @startuml deployment
 top to bottom direction
-skinparam linetype polyline
+' skinparam linetype polyline
 
 actor User
-rectangle Docker_container {
+rectangle DockerContainer {
     component API
-    component Model {
+    component ModelRegistry {
         artifact lgbm
     }
     component Processor
-    storage Feature_store
+    storage FeatureStore
+    component WorkFlowPipeline
 }
 
 User --> API : Запрашивает прогноз
 API --> Processor : Передает запрос
-Processor --> Feature_store : Запрашивает признаки
-Processor --> Model : Требует прогноз по данным c признаками
+Processor --> FeatureStore : Запрашивает признаки
+Processor --> ModelRegistry : Требует прогноз по данным c признаками
+Processor --> WorkFlowPipeline : Запускает пайплайн данных/модели
+WorkFlowPipeline --> FeatureStore : Выгружает Gold данные
+WorkFlowPipeline --> ModelRegistry : Выгружает модель и метаданные
 
 
 @enduml
