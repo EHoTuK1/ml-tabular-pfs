@@ -12,5 +12,7 @@ wheels/
 # Custom
 data
 typings
-tmp
 .obsidian
+.ruff_cache
+.pytest_cache
+tmp
