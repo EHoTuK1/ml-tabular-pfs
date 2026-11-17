@@ -1,0 +1,33 @@
+@startuml sequence_scenarios
+skinparam sequenceMessageAlign center
+actor User
+participant API
+participant Processor
+database Feature_store
+participant Model
+ 
+User -> API : POST /predict {shop_id, item_id}
+API -> Processor : запрос
+Processor -> Feature_store : есть shop_id и item_id в справочниках?
+ 
+alt id нет в справочнике
+    Feature_store --> Processor : нет
+    Processor --> API : ошибка
+    API --> User : 400 {detail: "unknown shop_id / item_id"}
+else id известны
+    Feature_store --> Processor : да
+    Processor -> Feature_store : признаки (месяцы 0-32)
+    Feature_store --> Processor : история
+    alt у пары есть история
+        Processor -> Processor : лаги, окна, средние, возраст, цены -> 31 признак
+    else у пары нет истории (холодный старт)
+        Processor -> Processor : те же признаки, лаги пустые (NaN)
+    end
+    Processor -> Model : вектор признаков
+    Model --> Processor : сырой прогноз
+    Processor -> Processor : clip
+    Processor --> API : прогноз
+    API --> User : 200 {prediction}
+end
+@enduml
+ 

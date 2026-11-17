@@ -1,0 +1,21 @@
+@startuml deployment
+top to bottom direction
+skinparam linetype polyline
+
+actor User
+rectangle Docker_container {
+    component API
+    component Model {
+        artifact lgbm
+    }
+    component Processor
+    storage Feature_store
+}
+
+User --> API : Запрашивает прогноз
+API --> Processor : Передает запрос
+Processor --> Feature_store : Запрашивает признаки
+Processor --> Model : Требует прогноз по данным c признаками
+
+
+@enduml
