@@ -1,0 +1,27 @@
+@startuml GET_train
+actor User
+participant API
+participant Processor
+participant ModelRegistry
+
+User -> API : GET /train/{run_id}
+API -> Processor : Запрашивает состояние запуска
+Processor -> ModelRegistry : Читает запуск по run_id
+alt Обучение выполняется
+    ModelRegistry --> Processor : running
+    Processor --> API : run_id и status
+    API --> User : 200 {run_id, status: running}
+else Обучение завершилось успешно
+    ModelRegistry --> Processor : succeeded и model_version
+    Processor --> API : run_id, status и model_version
+    API --> User : 200 {run_id, status: succeeded, model_version}
+else Обучение завершилось ошибкой
+    ModelRegistry --> Processor : failed и error
+    Processor --> API : run_id, status и error
+    API --> User : 200 {run_id, status: failed, error}
+else Запуск неизвестен
+    ModelRegistry --> Processor : Запуск не найден
+    Processor --> API : Запуск не найден
+    API --> User : 404 {"detail":"training run not found"}
+end
+@enduml

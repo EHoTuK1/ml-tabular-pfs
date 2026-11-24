@@ -5,21 +5,23 @@ top to bottom direction
 actor User
 rectangle DockerContainer {
     component API
-    component ModelRegistry {
+    component "ModelRegistry\nMLflow" as ModelRegistry {
         artifact lgbm
     }
     component Processor
-    storage FeatureStore
+    component FeatureStore
     component WorkFlowPipeline
 }
 
-User --> API : Запрашивает прогноз
-API --> Processor : Передает запрос
-Processor --> FeatureStore : Запрашивает признаки
-Processor --> ModelRegistry : Требует прогноз по данным c признаками
-Processor --> WorkFlowPipeline : Запускает пайплайн данных/модели
-WorkFlowPipeline --> FeatureStore : Выгружает Gold данные
-WorkFlowPipeline --> ModelRegistry : Выгружает модель и метаданные
+storage "Исходные CSV" as Dataset
+storage "SQLite и артефакты" as Volume
 
+User --> API : Запрашивает прогноз или обучение
+API --> Processor : Передаёт запросы прогноза, \n обучения и статуса
+Processor --> WorkFlowPipeline : Передаёт TrainingData\nдля обучения
+Processor --> ModelRegistry : Ведёт запуски,\nрегистрирует и активирует версии
+Processor --> FeatureStore : Получает признаки для обучения\nи прогноза
+Processor --> Dataset : Читает исходные CSV для снимка
+ModelRegistry --> Volume : Версии, запуски и снимки
 
 @enduml

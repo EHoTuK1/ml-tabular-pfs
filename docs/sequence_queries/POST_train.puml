@@ -1,0 +1,52 @@
+@startuml POST_train
+actor User
+participant API
+participant Processor
+participant "Подготовка данных" as Features
+participant WorkFlowPipeline
+participant ModelRegistry
+participant FeatureStore
+
+User -> API : POST /train с гиперпараметрами
+alt Ошибка валидации
+    API --> User : 422
+else Валидный запрос
+    API -> Processor : Запускает обучение
+    alt Обучение уже идёт
+        Processor --> API : Конфликт
+        API --> User : 409
+    else Запуск принят
+        Processor -> ModelRegistry : Создаёт запуск
+        Processor -> Processor : Передаёт задачу фоновому исполнителю
+        Processor --> API : run_id
+        API --> User : 202 {run_id}
+        group Фоновое выполнение
+            note over Processor : Может начаться до отправки 202
+            Processor -> Features : Снимает копию CSV и готовит Gold и признаки
+            alt Данные подготовлены
+                Features --> Processor : TrainingData
+                Processor -> WorkFlowPipeline : Передаёт TrainingData и гиперпараметры
+                alt Обучение завершилось
+                    WorkFlowPipeline --> Processor : Модель и метрики
+                    Processor -> ModelRegistry : Регистрирует и загружает версию
+                    ModelRegistry --> Processor : Модель и снимок одной версии
+                    Processor -> FeatureStore : Восстанавливает историю из снимка
+                    alt Версия готова к прогнозам
+                        Processor -> ModelRegistry : Назначает champion
+                        Processor -> Processor : Переключает предиктор
+                        Processor -> ModelRegistry : Записывает succeeded
+                    else Публикация версии завершилась ошибкой
+                        Processor -> ModelRegistry : Записывает failed
+                    end
+                else Обучение завершилось ошибкой
+                    WorkFlowPipeline --> Processor : Ошибка обучения
+                    Processor -> ModelRegistry : Записывает failed
+                end
+            else Подготовка завершилась ошибкой
+                Features --> Processor : Ошибка подготовки
+                Processor -> ModelRegistry : Записывает failed
+            end
+        end
+    end
+end
+@enduml

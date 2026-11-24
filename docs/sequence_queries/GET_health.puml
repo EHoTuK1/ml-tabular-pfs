@@ -1,0 +1,15 @@
+@startuml GET_health
+actor User
+participant API
+participant Processor
+
+User -> API : GET /health
+API -> Processor : Проверяет готовность модели
+alt Предиктор загружен
+    Processor --> API : model_loaded = true
+    API --> User : 200 {"status":"ok","model_loaded":true}
+else Предиктор ещё не загружен
+    Processor --> API : model_loaded = false
+    API --> User : 200 {"status":"ok","model_loaded":false}
+end
+@enduml
