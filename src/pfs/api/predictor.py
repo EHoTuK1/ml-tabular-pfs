@@ -8,14 +8,9 @@ API не знает, как считаются признаки и какая м
 from collections.abc import Sequence
 from typing import Protocol
 
+from pfs.errors import UnknownIdError
 
-class UnknownIdError(ValueError):
-    """Магазин или товар отсутствует в справочниках (холодный старт по id)."""
-
-    def __init__(self, shop_ids: Sequence[int] = (), item_ids: Sequence[int] = ()):
-        self.shop_ids = sorted(set(shop_ids))
-        self.item_ids = sorted(set(item_ids))
-        super().__init__(f"unknown shop_id: {self.shop_ids}, unknown item_id: {self.item_ids}")
+__all__ = ["Predictor", "UnknownIdError"]
 
 
 class Predictor(Protocol):
